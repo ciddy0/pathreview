@@ -7,7 +7,20 @@
 **Tier:** [ ] Tier 1 [x] Tier 2 [ ] Tier 3
 
 **Problem summary:**
-The service layer in `core/services/` is entirely undocumented — none of its public methods carry docstrings, so a reader has to infer each method's parameters, return shape, and failure modes from the implementation. This matters more here than in most modules because the services sit between the API routes and the database models, so they are the layer a new contributor reads first when tracing a request. A successful fix adds Google-style docstrings (description, Args, Returns, Raises) to every public method in `profile_service.py` and `review_service.py`, accurately describing the exceptions each one actually raises rather than restating the method name. The issue also lists `core/services/notification_service.py`, but that file does not exist in the current tree — worth confirming on the issue before starting.
+The service layer sits between the API routes and the database models, so it is the code a
+new contributor reads first when tracing a request — but its functions document themselves
+only with a one-line summary, with no statement of what they take, what they hand back, or
+how they fail. The issue describes this as having "no docstrings," which is slightly off:
+all eight public functions do have a short summary line, so the actual gap is the structured
+Args / Returns / Raises sections, not the docstrings themselves. That gap matters most
+around error behavior, which is genuinely inconsistent across the layer and invisible from
+the signatures: `delete_profile` rolls back and re-raises on failure, while `process_review`
+swallows its exceptions, marks the review `failed`, and returns `None` — a caller cannot
+tell those apart without reading both bodies. A successful fix gives every public function
+in `profile_service.py` and `review_service.py` a Google-style docstring whose Raises
+section reflects the control flow that is actually there, so callers can reason about
+failure without opening the implementation. One thing to confirm on the issue first: it
+lists `core/services/notification_service.py`, which does not exist in the current tree.
 
 **Branch name:** `docs/119-core-services-docstrings`
 
